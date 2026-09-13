@@ -1,0 +1,39 @@
+{
+  "01_specs": {
+    "quads": [
+      [[200,200],[700,200],[700,900],[200,900]],
+      [[800,200],[1300,200],[1300,900],[800,900]],
+      [[200,1000],[700,1000],[700,1700],[200,1700]],
+      [[800,1000],[1300,1000],[1300,1700],[800,1700]]
+    ],
+    "fit": "stretch",
+    "clear": [470,1040,1225,2125],
+    "notes": "4-frame marketing composite (black / white / dark wood / natural). Calibrate each frame in the tool."
+  },
+  "02_wood_floor": {
+    "quad": [[649,239],[2203,244],[2218,2629],[619,2628]],
+    "fit": "stretch",
+    "notes": "Black frame, white wall, light wood floor. Near straight-on."
+  },
+  "03_concrete": {
+    "quad": [[754,547],[1978,548],[1988,2442],[740,2440]],
+    "fit": "stretch",
+    "notes": "Black frame, concrete wall and floor. Wall shadow gradient."
+  },
+  "04_windowsill": {
+    "quad": [[806,594],[1880,610],[2020,2388],[901,2443]],
+    "fit": "stretch",
+    "notes": "White wood frame on sunlit sill. Real perspective + window & leaf shadows. Quad measured manually (frame and artwork both near-white)."
+  },
+  "05_sideboard": {
+    "quad": [[955,196],[1838,200],[1847,1514],[957,1518]],
+    "fit": "stretch",
+    "gain": 0.5,
+    "notes": "Black frame above mid-century sideboard. Glass reflection, reduced gain. OPEN: top edge ~few px off — poster sits slightly high."
+  },
+  "06_wall": {
+    "quad": [[400,400],[1400,400],[1400,1800],[400,1800]],
+    "fit": "stretch",
+    "notes": "Black frame on white wall with sideboard below. Calibrate quad corners with the tool."
+  }
+}
