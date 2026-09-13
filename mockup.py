@@ -39,9 +39,10 @@ def _make_mask(quad, height, width, supersample=4):
 
 
 def _load_template(path):
-    """Load template as float32 RGB [0,1]."""
+    """Load template as uint8 RGBA to minimise RAM (4× smaller than float32).
+    render_mockup() converts to float32 on the fly."""
     img = Image.open(path).convert("RGBA")
-    return np.array(img, dtype=np.float32) / 255.0   # (H, W, 4)
+    return np.array(img, dtype=np.uint8)   # (H, W, 4)
 
 
 def render_mockup(template_arr, poster_img, quads,
@@ -49,7 +50,7 @@ def render_mockup(template_arr, poster_img, quads,
     """
     Parameters
     ----------
-    template_arr : np.ndarray, float32 (H, W, 4)  — template loaded with _load_template()
+    template_arr : np.ndarray, uint8 (H, W, 4)  — template loaded with _load_template()
     poster_img   : PIL.Image.Image  — the poster artwork (any size/mode)
     quads        : list of 4 [x,y] pairs TL→TR→BR→BL  (single quad)
                    OR list of such lists               (multi-quad, e.g. 4-frame composite)
@@ -69,8 +70,8 @@ def render_mockup(template_arr, poster_img, quads,
 
     TH, TW = template_arr.shape[:2]
 
-    # Work on RGB float copy
-    template_rgb = template_arr[:, :, :3].copy()
+    # Convert uint8 → float32 here (stored as uint8 to save ~75 % RAM)
+    template_rgb = template_arr[:, :, :3].astype(np.float32) / 255.0
 
     # Wipe placeholder area BEFORE reading lighting (once, before any quad)
     if clear_rect is not None:
