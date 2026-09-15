@@ -8,7 +8,10 @@ template renders only download the source once (~35 MB).
 Endpoints
 ---------
 GET /render?url=<poster_url>&t=<template>&w=2000&q=92&gain=0.5&key=<token>
-    Returns image/jpeg of the rendered mockup.
+GET /render?fileid=<drive_file_id>&t=<template>&w=2000&q=92&gain=0.5&key=<token>
+    Returns image/jpeg of the rendered mockup. Provide either `url` or
+    `fileid` (Google Drive file ID); when `fileid` is set the service
+    builds the Drive download URL internally to avoid `&`-escaping issues.
 
 GET /templates?key=<token>
     Returns JSON list of available template names.
@@ -159,7 +162,8 @@ def list_templates(key: str = Query(default="")):
 
 @app.get("/render")
 async def render(
-    url: str         = Query(...,           description="https URL of the poster image"),
+    url: str | None  = Query(default=None,  description="https URL of the poster image"),
+    fileid: str | None = Query(default=None, description="Google Drive file ID of the poster image"),
     t:   str         = Query(...,           description="Template name, e.g. 02_wood_floor"),
     w:   int         = Query(default=2000,  description="Output width in pixels"),
     q:   int         = Query(default=92,    description="JPEG quality 1-95"),
@@ -167,6 +171,13 @@ async def render(
     key: str         = Query(default="",   description="MOCKUP_TOKEN"),
 ):
     _require_auth(key)
+
+    if fileid:
+        url = f"https://drive.google.com/uc?export=download&id={fileid}&confirm=t"
+
+    if not url:
+        raise HTTPException(status_code=400,
+                             detail="At least one of 'url' or 'fileid' must be provided")
 
     if t not in QUADS:
         raise HTTPException(status_code=404, detail=f"Unknown template: {t!r}")
