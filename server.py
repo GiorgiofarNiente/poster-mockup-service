@@ -36,6 +36,8 @@ import time
 from collections import OrderedDict
 from urllib.parse import urlparse
 
+from typing import Optional
+
 import httpx
 import numpy as np
 from fastapi import FastAPI, HTTPException, Query
@@ -162,22 +164,20 @@ def list_templates(key: str = Query(default="")):
 
 @app.get("/render")
 async def render(
-    url: str | None  = Query(default=None,  description="https URL of the poster image"),
-    fileid: str | None = Query(default=None, description="Google Drive file ID of the poster image"),
-    t:   str         = Query(...,           description="Template name, e.g. 02_wood_floor"),
-    w:   int         = Query(default=2000,  description="Output width in pixels"),
-    q:   int         = Query(default=92,    description="JPEG quality 1-95"),
-    gain: float | None = Query(default=None, description="Override reflection gain"),
-    key: str         = Query(default="",   description="MOCKUP_TOKEN"),
+    t: str = Query(...),
+    key: str = Query(...),
+    w: int = Query(default=2000),
+    q: int = Query(default=92),
+    url: Optional[str] = Query(default=None),
+    fileid: Optional[str] = Query(default=None),
+    gain: Optional[float] = Query(default=None, description="Override reflection gain"),
 ):
     _require_auth(key)
 
-    if fileid:
+    if fileid and not url:
         url = f"https://drive.google.com/uc?export=download&id={fileid}&confirm=t"
-
     if not url:
-        raise HTTPException(status_code=400,
-                             detail="At least one of 'url' or 'fileid' must be provided")
+        raise HTTPException(status_code=400, detail="url or fileid required")
 
     if t not in QUADS:
         raise HTTPException(status_code=404, detail=f"Unknown template: {t!r}")
