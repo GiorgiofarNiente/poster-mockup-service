@@ -208,6 +208,15 @@ async def render(
 
     poster_img = Image.open(io.BytesIO(poster_bytes))
 
+    # Downsample source to 2000px max — print res wastes RAM on mockup renders
+    MAX_SRC = 2000
+    if max(poster_img.size) > MAX_SRC:
+        ratio = MAX_SRC / max(poster_img.size)
+        poster_img = poster_img.resize(
+            (int(poster_img.size[0] * ratio), int(poster_img.size[1] * ratio)),
+            Image.LANCZOS
+        )
+
     cfg      = QUADS[t]
     gain_val = gain if gain is not None else float(cfg.get("gain", 1.0))
     clear    = cfg.get("clear", None)
