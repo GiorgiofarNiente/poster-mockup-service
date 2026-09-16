@@ -163,6 +163,11 @@ def list_templates(key: str = Query(default="")):
     return {"templates": list(QUADS.keys())}
 
 
+@app.get("/debug/templates")
+def debug_templates():
+    return {name: list(arr.shape) for name, arr in TEMPLATES.items()}
+
+
 @app.get("/render")
 async def render(
     t: str = Query(...),
