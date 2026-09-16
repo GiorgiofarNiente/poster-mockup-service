@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy service code and templates
-LABEL build_bust="v2"
+LABEL build_bust="v4"
 COPY mockup.py quads.json ./
 COPY server.py ./
 COPY templates/ ./templates/
