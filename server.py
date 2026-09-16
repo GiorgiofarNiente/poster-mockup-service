@@ -271,13 +271,10 @@ async def resize_image(
         _cache.put(url, img_bytes)
     buf_in = io.BytesIO(img_bytes)
     img = Image.open(buf_in)
-    img.draft("RGB", (w * 2, w * 2))
-    img.load()
-    if max(img.size) > w:
-        ratio = w / max(img.size)
-        img = img.resize((int(img.size[0] * ratio), int(img.size[1] * ratio)), Image.LANCZOS)
-    if img.mode != "RGB":
-        img = img.convert("RGB")
+    # For JPEG: load at 1/8 resolution to minimize RAM
+    img.draft("RGB", (w, w))
+    img = img.convert("RGB")
+    img.thumbnail((w, w), Image.LANCZOS)
     buf_out = io.BytesIO()
     img.save(buf_out, "JPEG", quality=q, optimize=True)
     return Response(content=buf_out.getvalue(), media_type="image/jpeg")
