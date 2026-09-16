@@ -238,4 +238,47 @@ async def render(
     buf = io.BytesIO()
     result.save(buf, "JPEG", quality=q, optimize=True)
     return Response(content=buf.getvalue(), media_type="image/jpeg")
+
+
+@app.get("/resize")
+async def resize_image(
+    key: str = Query(...),
+    w: int = Query(default=1500),
+    q: int = Query(default=88),
+    url: Optional[str] = Query(default=None),
+    fileid: Optional[str] = Query(default=None),
+):
+    _require_auth(key)
+    if fileid and not url:
+        url = f"https://drive.google.com/uc?export=download&id={fileid}&confirm=t"
+    if not url:
+        raise HTTPException(status_code=400, detail="url or fileid required")
+    try:
+        _check_url(url)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    img_bytes = _cache.get(url)
+    if img_bytes is None:
+        try:
+            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+                resp = await client.get(url)
+            resp.raise_for_status()
+            img_bytes = resp.content
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=502, detail=f"Image fetch failed: {e.response.status_code}")
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Image fetch error: {e}")
+        _cache.put(url, img_bytes)
+    buf_in = io.BytesIO(img_bytes)
+    img = Image.open(buf_in)
+    img.draft("RGB", (w * 2, w * 2))
+    img.load()
+    if max(img.size) > w:
+        ratio = w / max(img.size)
+        img = img.resize((int(img.size[0] * ratio), int(img.size[1] * ratio)), Image.LANCZOS)
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+    buf_out = io.BytesIO()
+    img.save(buf_out, "JPEG", quality=q, optimize=True)
+    return Response(content=buf_out.getvalue(), media_type="image/jpeg")
 # deploy-trigger
