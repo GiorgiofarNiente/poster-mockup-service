@@ -71,6 +71,15 @@ for _name in QUADS:
 
 print(f"[startup] {len(TEMPLATES)} templates loaded: {list(TEMPLATES)}")
 
+# Downscale templates to 50% to reduce RAM
+for _name in list(TEMPLATES.keys()):
+    arr = TEMPLATES[_name]
+    h, w = arr.shape[:2]
+    img_t = Image.fromarray(arr)
+    img_t = img_t.resize((w // 2, h // 2), Image.LANCZOS)
+    TEMPLATES[_name] = np.asarray(img_t, dtype=np.uint8)
+    print(f"[startup] {_name} resized to {img_t.size}")
+
 # ---------------------------------------------------------------------------
 # Poster cache  (LRU + TTL)
 # ---------------------------------------------------------------------------
