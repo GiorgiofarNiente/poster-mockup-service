@@ -71,14 +71,17 @@ for _name in QUADS:
 
 print(f"[startup] {len(TEMPLATES)} templates loaded: {list(TEMPLATES)}")
 
-# Downscale templates to 50% to reduce RAM
+# Downscale templates to 50% to reduce RAM; track exact scale per template
+TEMPLATE_SCALES: dict[str, float] = {}
 for _name in list(TEMPLATES.keys()):
     arr = TEMPLATES[_name]
     h, w = arr.shape[:2]
+    new_w, new_h = w // 2, h // 2
     img_t = Image.fromarray(arr)
-    img_t = img_t.resize((w // 2, h // 2), Image.LANCZOS)
+    img_t = img_t.resize((new_w, new_h), Image.LANCZOS)
     TEMPLATES[_name] = np.asarray(img_t, dtype=np.uint8)
-    print(f"[startup] {_name} resized to {img_t.size}")
+    TEMPLATE_SCALES[_name] = new_w / w  # exact scale (typically 0.5)
+    print(f"[startup] {_name} resized to {img_t.size} (scale={TEMPLATE_SCALES[_name]:.4f})")
 
 # ---------------------------------------------------------------------------
 # Poster cache  (LRU + TTL)
@@ -186,6 +189,7 @@ async def render(
     url: Optional[str] = Query(default=None),
     fileid: Optional[str] = Query(default=None),
     gain: Optional[float] = Query(default=None, description="Override reflection gain"),
+    crop: int = Query(default=1, description="Crop to web_crop rect (3:4 portrait). 1=yes 0=full"),
 ):
     _require_auth(key)
 
@@ -239,9 +243,34 @@ async def render(
     # Support both "quad" (single) and "quads" (multi-quad, e.g. 4-frame composite)
     quad_data = cfg.get("quads") or [cfg["quad"]]
 
+    # Scale quad coordinates to match the downscaled template resolution.
+    # quads.json is calibrated for full-res templates; at startup templates are
+    # resized to 50% (or whatever TEMPLATE_SCALES tracks), so all pixel coords
+    # must be multiplied by that scale before being passed to render_mockup.
+    scale = TEMPLATE_SCALES.get(t, 1.0)
+    def _scale_quad(q):
+        return [[int(x * scale), int(y * scale)] for x, y in q]
+    quad_data_scaled = [_scale_quad(q) for q in quad_data]
+    clear_scaled = [int(v * scale) for v in clear] if clear else None
+
     # Render (CPU-bound — fine at this volume; add ProcessPoolExecutor if needed)
-    result = render_mockup(TEMPLATES[t], poster_img, quad_data,
-                           gain=gain_val, clear_rect=clear)
+    result = render_mockup(TEMPLATES[t], poster_img, quad_data_scaled,
+                           gain=gain_val, clear_rect=clear_scaled)
+
+    # Crop to web_crop rect (3:4 portrait, framing the poster nicely)
+    web_crop = cfg.get("web_crop", None)
+    if crop and web_crop:
+        cx0 = int(web_crop[0] * scale)
+        cy0 = int(web_crop[1] * scale)
+        cx1 = int(web_crop[2] * scale)
+        cy1 = int(web_crop[3] * scale)
+        # Clamp to rendered image bounds
+        rw, rh = result.size
+        cx0 = max(0, min(cx0, rw - 1))
+        cy0 = max(0, min(cy0, rh - 1))
+        cx1 = max(cx0 + 1, min(cx1, rw))
+        cy1 = max(cy0 + 1, min(cy1, rh))
+        result = result.crop((cx0, cy0, cx1, cy1))
 
     # Resize
     aspect = result.size[1] / result.size[0]
