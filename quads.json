@@ -114,30 +114,30 @@
   "06_wall": {
     "quad": [
       [
-        1320,
-        133
+        1466,
+        305
       ],
       [
-        2225,
-        133
+        2337,
+        305
       ],
       [
-        2225,
-        1532
+        2337,
+        1608
       ],
       [
-        1320,
-        1532
+        1466,
+        1608
       ]
     ],
     "fit": "stretch",
     "web_crop": [
-      1121,
+      1100,
       0,
-      2423,
-      1699
+      2600,
+      1800
     ],
-    "notes": "Black frame hung on white wall, dark sideboard below. ~3:4 portrait crop."
+    "notes": "Black frame hung on white wall, dark sideboard below. 3144x2930px. Interior white: TL=[1466,305] ratio 1.496 (~2:3)."
   },
   "07_listing": {
     "quads": [
