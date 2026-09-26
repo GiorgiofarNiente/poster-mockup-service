@@ -27,33 +27,33 @@
     ],
     "notes": "Black frame leaning on white wall, wood floor. 2832x2930px. Ratio 0.661 (~2:3)."
   },
-  "03_concrete": {
+  "03_stool": {
     "quad": [
       [
-        727,
-        521
+        1545,
+        468
       ],
       [
-        2007,
-        521
+        2411,
+        467
       ],
       [
-        2018,
-        2471
+        2420,
+        1765
       ],
       [
-        714,
-        2470
+        1547,
+        1773
       ]
     ],
     "fit": "stretch",
     "web_crop": [
-      459,
-      287,
-      2272,
-      2705
+      1080,
+      100,
+      2880,
+      2800
     ],
-    "notes": "Black frame leaning on concrete wall. 3:4 portrait crop."
+    "notes": "Black frame on wooden stool, white wall, herringbone parquet floor. 4000x3000px landscape. 2:3 portrait frame (ratio 0.667)."
   },
   "04_windowsill": {
     "quad": [
@@ -138,34 +138,6 @@
       1699
     ],
     "notes": "Black frame hung on white wall, dark sideboard below. ~3:4 portrait crop."
-  },
-  "09_floor_concrete": {
-    "quad": [
-      [
-        1546,
-        467
-      ],
-      [
-        2412,
-        468
-      ],
-      [
-        2418,
-        1767
-      ],
-      [
-        1537,
-        1765
-      ]
-    ],
-    "fit": "stretch",
-    "web_crop": [
-      1080,
-      100,
-      2880,
-      2800
-    ],
-    "notes": "Black frame on wooden stool, white wall, herringbone parquet floor. 4000x3000px landscape. 2:3 portrait frame (ratio 0.667)."
   },
   "07_listing": {
     "quads": [
