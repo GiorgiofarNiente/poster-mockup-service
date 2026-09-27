@@ -62,6 +62,23 @@ def _composite_quad(tmpl_f: np.ndarray, poster_bgra: np.ndarray,
     th, tw = tmpl_f.shape[:2]
 
     cropped   = _crop_poster(poster_bgra, quad)
+
+    # Pre-shrink with area averaging to the frame's on-screen size.
+    # warpPerspective only samples 2x2 source pixels per output pixel, so
+    # warping a ~6600px poster straight into a ~1500px frame aliases any fine
+    # texture (grain, halftone, paper lines) into moiré bands. INTER_AREA
+    # averages every source pixel first. Also cuts RAM: the float32 copy
+    # below shrinks from ~800 MB to ~40 MB.
+    tl, tr, br, bl = quad
+    frame_w = max(np.linalg.norm(tr - tl), np.linalg.norm(br - bl))
+    frame_h = max(np.linalg.norm(bl - tl), np.linalg.norm(br - tr))
+    ph0, pw0 = cropped.shape[:2]
+    s = max(frame_w / pw0, frame_h / ph0)
+    if s < 1.0:
+        new_w = max(int(round(pw0 * s)), 1)
+        new_h = max(int(round(ph0 * s)), 1)
+        cropped = cv2.resize(cropped, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
     ph, pw    = cropped.shape[:2]
 
     src_pts = np.array([
