@@ -61,7 +61,7 @@ def _composite_quad(tmpl_f: np.ndarray, poster_bgra: np.ndarray,
     """
     th, tw = tmpl_f.shape[:2]
 
-    cropped   = _crop_poster(poster_bgra, quad)
+    cropped   = poster_bgra
 
     # Pre-shrink with area averaging to the frame's on-screen size.
     # warpPerspective only samples 2x2 source pixels per output pixel, so
