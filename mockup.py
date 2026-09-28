@@ -40,7 +40,7 @@ def _crop_poster(poster_bgra: np.ndarray, quad: np.ndarray):
     tl, tr, br, bl = quad
     frame_w      = (np.linalg.norm(tr - tl) + np.linalg.norm(br - bl)) / 2.0
     frame_h      = (np.linalg.norm(bl - tl) + np.linalg.norm(br - tr)) / 2.0
-    frame_aspect = frame_w / frame_h
+    frame_aspect = 2.0 / 3.0
 
     ph, pw        = poster_bgra.shape[:2]
     poster_aspect = pw / ph
@@ -61,7 +61,7 @@ def _composite_quad(tmpl_f: np.ndarray, poster_bgra: np.ndarray,
     """
     th, tw = tmpl_f.shape[:2]
 
-    cropped   = poster_bgra
+    cropped   = _crop_poster(poster_bgra, quad)
 
     # Pre-shrink with area averaging to the frame's on-screen size.
     # warpPerspective only samples 2x2 source pixels per output pixel, so
